@@ -171,19 +171,19 @@ choice
 		select FORCE_SDRAM_OR_BRAM
 		select DISABLE_NVME
 
-#	config HLS_SPONGE
-#		bool "HLS Sponge"
-#		help
-#		  This is an example of a C code ported and optimized:
-#		  It is a benchmark to measure the SHA3 key generation performance
-#		  - Data are generated in the algorithm - No data move
-#		  - 3 functions : SPEED, SHA3, SHAKE (and SHA3_SHAKE)
-#		  - only the SPEED test was optimized
-#		  This example is written in C and compiled with HLS
-#		select ENABLE_HLS_SUPPORT
-#		select DISABLE_SDRAM_AND_BRAM
-#		select DISABLE_NVME
-#		select ACTION_HALF_WIDTH
+	config HLS_SPONGE
+		bool "HLS Sponge"
+		help
+		  This is an example of a C code ported and optimized:
+		  It is a benchmark to measure the SHA3 key generation performance
+		  - Data are generated in the algorithm - No data move
+		  - 3 functions : SPEED, SHA3, SHAKE (and SHA3_SHAKE)
+		  - only the SPEED test was optimized
+		  This example is written in C and compiled with HLS
+		select ENABLE_HLS_SUPPORT
+		select DISABLE_SDRAM_AND_BRAM
+		select DISABLE_NVME
+		select ACTION_HALF_WIDTH
 endchoice
 
 config ACTION_HALF_WIDTH
