@@ -7,7 +7,9 @@ module jm_framework #(
     parameter ID_WIDTH = 1,
     parameter ARUSER_WIDTH = 9,
     parameter AWUSER_WIDTH = 9,
-    parameter RETURN_WIDTH = 64,
+    parameter RETURN_WIDTH = 41,
+	parameter PINFO_WIDTH = 88,
+	parameter PASID_WIDTH = 9,
     parameter KERNEL_NUM = 2,
     parameter LITE_DWIDTH = 32,
     parameter LITE_AWIDTH = 32,
@@ -18,9 +20,9 @@ module jm_framework #(
         input                           rst_n           ,
 
         output      [KERNEL_NUM-1:0]    engine_start    ,
-        output      [1023:0]            jd_payload      ,
+        output      [HOST_DWIDTH-1:0]   jd_payload      ,
         input       [KERNEL_NUM-1:0]    engine_done     ,
-	//	input       [RETURN_WIDTH-1:0]  return_code     ,
+	//	input       [RETURN_WIDTH-63:0] return_code     ,
         //---- AXI Lite bus----
           // AXI write address channel
         output                          s_axi_awready   ,
@@ -97,23 +99,25 @@ module jm_framework #(
         input                           job_m_axi_rvalid
 );
 
-    wire    [87:0]                  process_info_w  ;
+    wire    [PINFO_WIDTH-1:0]       process_info_w  ;
     wire                            process_start_w ;
     wire                            process_ready_w ;
     wire                            dsc0_pull_w     ;
     wire                            dsc0_ready_w    ;
     wire    [HOST_DWIDTH-1:0]       dsc0_data_w     ;
     wire                            complete_push_w ;
-    wire    [40:0]                  return_data_w   ;
+    wire    [RETURN_WIDTH-1:0]      return_data_w   ;
     wire                            complete_ready_w;
     wire    [31:0]                  cmpl_ram_data_w ;
-    wire    [8:0]                   cmpl_ram_addr_w ;
+    wire    [PASID_WIDTH-1:0]       cmpl_ram_addr_w ;
     wire                            cmpl_ram_hi_w   ;
     wire                            cmpl_ram_lo_w   ;
 
 mp_control #(
-        .DATA_WIDTH   (32                             ),
-        .ADDR_WIDTH   (32                             )
+        .PINFO_WIDTH    ( PINFO_WIDTH   ),
+        .PASID_WIDTH    ( PASID_WIDTH   ),
+        .DATA_WIDTH     ( LITE_DWIDTH   ),
+        .ADDR_WIDTH     ( LITE_AWIDTH   )
  ) mp_control1 (
         .clk                        ( clk                   ),
         .rst_n                      ( rst_n                 ),
@@ -147,42 +151,51 @@ mp_control #(
         .i_action_version           ( i_action_version      )
         );
 
-job_manager job_manager0 (
-       .clk                         ( clk                   ),
-       .rst_n                       ( rst_n                 ),
-       .process_info_i              ( process_info_w        ),
-       .process_start_i             ( process_start_w       ),
-       .process_ready_o             ( process_ready_w       ),
-       .dsc0_pull_i                 ( dsc0_pull_w           ),
-       .dsc0_ready_o                ( dsc0_ready_w          ),
-       .dsc0_data_o                 ( dsc0_data_w           ),
+job_manager #(
+        .ID_WIDTH       ( ID_WIDTH      ),
+        .ARUSER_WIDTH   ( ARUSER_WIDTH  ),
+        .PINFO_WIDTH    ( PINFO_WIDTH   ),
+        .PASID_WIDTH    ( PASID_WIDTH   ),
+        .DATA_WIDTH     ( HOST_DWIDTH   ),
+        .ADDR_WIDTH     ( HOST_AWIDTH   )
+	)job_manager0 (
+        .clk                        ( clk                   ),
+        .rst_n                      ( rst_n                 ),
+        .process_info_i             ( process_info_w        ),
+        .process_start_i            ( process_start_w       ),
+        .process_ready_o            ( process_ready_w       ),
+        .dsc0_pull_i                ( dsc0_pull_w           ),
+        .dsc0_ready_o               ( dsc0_ready_w          ),
+        .dsc0_data_o                ( dsc0_data_w           ),
 
-                        //---- AXI bus interfaced with SNAP core ----
-                          // AXI read address channel
-       .m_axi_arid                  ( job_m_axi_arid        ),
-       .m_axi_araddr                ( job_m_axi_araddr      ),
-       .m_axi_arlen                 ( job_m_axi_arlen       ),
-       .m_axi_arsize                ( job_m_axi_arsize      ),
-       .m_axi_arburst               ( job_m_axi_arburst     ),
-       .m_axi_aruser                ( job_m_axi_aruser      ),
-       .m_axi_arcache               ( job_m_axi_arcache     ),
-       .m_axi_arlock                ( job_m_axi_arlock      ),
-       .m_axi_arprot                ( job_m_axi_arprot      ),
-       .m_axi_arqos                 ( job_m_axi_arqos       ),
-       .m_axi_arregion              ( job_m_axi_arregion    ),
-       .m_axi_arvalid               ( job_m_axi_arvalid     ),
-       .m_axi_arready               ( job_m_axi_arready     ),
-                          // AXI read data channel
-       .m_axi_rready                ( job_m_axi_rready      ),
-       .m_axi_rid                   ( job_m_axi_rid         ),
-       .m_axi_rdata                 ( job_m_axi_rdata       ),
-       .m_axi_rresp                 ( job_m_axi_rresp       ),
-       .m_axi_rlast                 ( job_m_axi_rlast       ),
-       .m_axi_rvalid                ( job_m_axi_rvalid      )
+        //---- AXI bus interfaced with SNAP core ----
+        // AXI read address channel
+        .m_axi_arid                 ( job_m_axi_arid        ),
+        .m_axi_araddr               ( job_m_axi_araddr      ),
+        .m_axi_arlen                ( job_m_axi_arlen       ),
+        .m_axi_arsize               ( job_m_axi_arsize      ),
+        .m_axi_arburst              ( job_m_axi_arburst     ),
+        .m_axi_aruser               ( job_m_axi_aruser      ),
+        .m_axi_arcache              ( job_m_axi_arcache     ),
+        .m_axi_arlock               ( job_m_axi_arlock      ),
+        .m_axi_arprot               ( job_m_axi_arprot      ),
+        .m_axi_arqos                ( job_m_axi_arqos       ),
+        .m_axi_arregion             ( job_m_axi_arregion    ),
+        .m_axi_arvalid              ( job_m_axi_arvalid     ),
+        .m_axi_arready              ( job_m_axi_arready     ),
+        // AXI read data channel
+        .m_axi_rready               ( job_m_axi_rready      ),
+        .m_axi_rid                  ( job_m_axi_rid         ),
+        .m_axi_rdata                ( job_m_axi_rdata       ),
+        .m_axi_rresp                ( job_m_axi_rresp       ),
+        .m_axi_rlast                ( job_m_axi_rlast       ),
+        .m_axi_rvalid               ( job_m_axi_rvalid      )
         );
 
 job_scheduler #(
-       .KERNEL_NUM   (KERNEL_NUM                     )
+        .HOST_DWIDTH    ( HOST_DWIDTH   ),
+        .RETURN_WIDTH   ( RETURN_WIDTH  ),
+        .KERNEL_NUM     ( KERNEL_NUM    )
     )job_scheduler0(
         .clk                        ( clk                   ),
         .rst_n                      ( rst_n                 ),
@@ -197,7 +210,14 @@ job_scheduler #(
         .engine_done                ( engine_done           )
         );
 
-job_completion job_completion0(
+job_completion #(
+        .ID_WIDTH       ( ID_WIDTH      ),
+        .AWUSER_WIDTH   ( AWUSER_WIDTH  ),
+        .RETURN_WIDTH   ( RETURN_WIDTH  ),
+        .PASID_WIDTH    ( PASID_WIDTH   ),
+        .DATA_WIDTH     ( HOST_DWIDTH   ),
+        .ADDR_WIDTH     ( HOST_AWIDTH   )
+	)job_completion0(
         .clk                        ( clk                   ),
         .rst_n                      ( rst_n                 ),
         .cmpl_ram_addr_i            ( cmpl_ram_addr_w       ),

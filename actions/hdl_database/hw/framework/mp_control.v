@@ -1,7 +1,8 @@
 `timescale 1ns/1ps
 
 module mp_control #(
-    parameter KERNEL_NUM = 8,
+    parameter PINFO_WIDTH = 88,
+    parameter PASID_WIDTH = 9,
     parameter DATA_WIDTH = 32,
     parameter ADDR_WIDTH = 32
 )(
@@ -34,11 +35,11 @@ module mp_control #(
                       input                             s_axi_rready    ,
                       output    reg                     s_axi_rvalid    ,
                       //---- local control ----
-                      output        [8:0]               cmpl_ram_addr_o ,
+                      output        [PASID_WIDTH-1:0]   cmpl_ram_addr_o ,
                       output                            cmpl_ram_hi_o   ,
                       output                            cmpl_ram_lo_o   ,
                       output        [31:0]              cmpl_ram_data_o ,
-                      output        [87:0]              process_info_o  ,
+                      output        [PINFO_WIDTH-1:0]   process_info_o  ,
                       output    reg                     process_start_o ,
                       input                             process_ready_i ,
                       input         [31:0]              i_action_type   ,
@@ -51,12 +52,12 @@ module mp_control #(
  reg    [31:0]              write_address;
  wire   [31:0]              wr_mask;
  reg    [31:0]              REG_global_control;
- reg    [8:0]               process_id;
+ reg    [PASID_WIDTH-1:0]   process_id;
  wire                       ram_read;
  wire                       ram_write0;
  wire                       ram_write1;
- wire   [8:0]               ram_read_addr;
- wire   [8:0]               ram_write_addr;
+ wire   [PASID_WIDTH-1:0]   ram_read_addr;
+ wire   [PASID_WIDTH-1:0]   ram_write_addr;
  wire   [63:0]              ram_read_data;
  wire   [31:0]              ram_write_data;
 

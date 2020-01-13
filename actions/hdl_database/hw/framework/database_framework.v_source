@@ -191,23 +191,27 @@ module database_framework #(
     input              i_interrupt_ack
     );
 
-    wire    [KERNEL_NUM-1:0]        kernel_done     ;
-    wire    [KERNEL_NUM-1:0]        kernel_start    ;
-    wire    [KERNEL_NUM-1:0]        engine_interrupt;
-    wire    [1023:0]                kernel_data     ;
-    wire    [87:0]                  process_info_w  ;
-    wire                            process_start_w ;
-    wire                            process_ready_w ;
-    wire                            dsc0_pull_w     ;
-    wire                            dsc0_ready_w    ;
-    wire    [1023:0]                dsc0_data_w     ;
-    wire                            complete_push_w ;
-    wire    [40:0]                  return_data_w   ;
-    wire                            complete_ready_w;
-    wire    [31:0]                  cmpl_ram_data_w ;
-    wire    [8:0]                   cmpl_ram_addr_w ;
-    wire                            cmpl_ram_hi_w   ;
-    wire                            cmpl_ram_lo_w   ;
+    parameter PINFO_WIDTH = 'd88;
+    parameter RETURN_WIDTH = 'd41;
+    parameter PASID_WIDTH = 'd9;
+
+    wire    [KERNEL_NUM-1:0]                            kernel_done     ;
+    wire    [KERNEL_NUM-1:0]                            kernel_start    ;
+    wire    [KERNEL_NUM-1:0]                            engine_interrupt;
+    wire    [C_M_AXI_HOST_MEM_DATA_WIDTH-1:0]           kernel_data     ;
+    wire    [PINFO_WIDTH-1:0]                           process_info_w  ;
+    wire                                                process_start_w ;
+    wire                                                process_ready_w ;
+    wire                                                dsc0_pull_w     ;
+    wire                                                dsc0_ready_w    ;
+    wire    [C_M_AXI_HOST_MEM_DATA_WIDTH-1:0]           dsc0_data_w     ;
+    wire                                                complete_push_w ;
+    wire    [RETURN_WIDTH-1:0]                          return_data_w   ;
+    wire                                                complete_ready_w;
+    wire    [31:0]                                      cmpl_ram_data_w ;
+    wire    [PASID_WIDTH-1:0]                           cmpl_ram_addr_w ;
+    wire                                                cmpl_ram_hi_w   ;
+    wire                                                cmpl_ram_lo_w   ;
 
     // AXI write address channel
     wire                                                kernel_m_axi_snap_awid [KERNEL_NUM-1:0];
@@ -259,48 +263,48 @@ module database_framework #(
 
     // AXI write address channel
     wire                                                job_m_axi_awid;
-    wire   [C_M_AXI_HOST_MEM_ADDR_WIDTH -1 :0]          job_m_axi_awaddr;
-    wire   [0007:0]                                     job_m_axi_awlen;
-    wire   [0002:0]                                     job_m_axi_awsize;
-    wire   [0001:0]                                     job_m_axi_awburst;
-    wire   [0003:0]                                     job_m_axi_awcache;
+    wire    [C_M_AXI_HOST_MEM_ADDR_WIDTH -1 :0]         job_m_axi_awaddr;
+    wire    [0007:0]                                    job_m_axi_awlen;
+    wire    [0002:0]                                    job_m_axi_awsize;
+    wire    [0001:0]                                    job_m_axi_awburst;
+    wire    [0003:0]                                    job_m_axi_awcache;
     wire                                                job_m_axi_awlock;
-    wire   [0002:0]                                     job_m_axi_awprot;
-    wire   [0003:0]                                     job_m_axi_awqos;
-    wire   [0003:0]                                     job_m_axi_awregion;
-    wire   [C_M_AXI_HOST_MEM_AWUSER_WIDTH - 1:0]        job_m_axi_awuser;
+    wire    [0002:0]                                    job_m_axi_awprot;
+    wire    [0003:0]                                    job_m_axi_awqos;
+    wire    [0003:0]                                    job_m_axi_awregion;
+    wire    [C_M_AXI_HOST_MEM_AWUSER_WIDTH - 1:0]       job_m_axi_awuser;
     wire                                                job_m_axi_awvalid;
     wire                                                job_m_axi_awready;
                                                            // AXI write data channel
     wire                                                job_m_axi_wid;
-    wire   [1023:0]                                     job_m_axi_wdata;
-    wire   [127:0]                                      job_m_axi_wstrb;
+    wire    [C_M_AXI_HOST_MEM_DATA_WIDTH -1 :0]         job_m_axi_wdata;
+    wire    [C_M_AXI_HOST_MEM_DATA_WIDTH/8-1 :0]        job_m_axi_wstrb;
     wire                                                job_m_axi_wlast;
     wire                                                job_m_axi_wvalid;
     wire                                                job_m_axi_wready;
                                                            // AXI write response channel
     wire                                                job_m_axi_bready;
     wire                                                job_m_axi_bid;
-    wire   [1:0]                                        job_m_axi_bresp;
+    wire    [1:0]                                       job_m_axi_bresp;
     wire                                                job_m_axi_bvalid;
                                                            // AXI read address channel
     wire                                                job_m_axi_arid;
-    wire   [C_M_AXI_HOST_MEM_ADDR_WIDTH-1:0]            job_m_axi_araddr;
-    wire   [0007:0]                                     job_m_axi_arlen;
-    wire   [0002:0]                                     job_m_axi_arsize;
-    wire   [0001:0]                                     job_m_axi_arburst;
-    wire   [C_M_AXI_HOST_MEM_ARUSER_WIDTH-1:0]          job_m_axi_aruser;
-    wire   [0003:0]                                     job_m_axi_arcache;
+    wire    [C_M_AXI_HOST_MEM_ADDR_WIDTH-1:0]           job_m_axi_araddr;
+    wire    [0007:0]                                    job_m_axi_arlen;
+    wire    [0002:0]                                    job_m_axi_arsize;
+    wire    [0001:0]                                    job_m_axi_arburst;
+    wire    [C_M_AXI_HOST_MEM_ARUSER_WIDTH-1:0]         job_m_axi_aruser;
+    wire    [0003:0]                                    job_m_axi_arcache;
     wire                                                job_m_axi_arlock;
-    wire   [0002:0]                                     job_m_axi_arprot;
-    wire   [0003:0]                                     job_m_axi_arqos;
-    wire   [0003:0]                                     job_m_axi_arregion;
+    wire    [0002:0]                                    job_m_axi_arprot;
+    wire    [0003:0]                                    job_m_axi_arqos;
+    wire    [0003:0]                                    job_m_axi_arregion;
     wire                                                job_m_axi_arvalid;
     wire                                                job_m_axi_arready;
                                                            // AXI read data channel
     wire                                                job_m_axi_rready;
     wire                                                job_m_axi_rid;
-    wire    [1023:0]                                    job_m_axi_rdata;
+    wire    [C_M_AXI_HOST_MEM_DATA_WIDTH-1 :0]          job_m_axi_rdata;
     wire    [1:0]                                       job_m_axi_rresp;
     wire                                                job_m_axi_rlast;
     wire                                                job_m_axi_rvalid;
@@ -734,7 +738,17 @@ module database_framework #(
         );
 
 jm_framework #(
-       .KERNEL_NUM   (KERNEL_NUM                     )
+        .ID_WIDTH       ( 'd1                           ),
+        .ARUSER_WIDTH   ( C_M_AXI_HOST_MEM_AWUSER_WIDTH ),
+        .AWUSER_WIDTH   ( C_M_AXI_HOST_MEM_AWUSER_WIDTH ),
+        .RETURN_WIDTH   ( RETURN_WIDTH                  ),
+        .PINFO_WIDTH    ( PINFO_WIDTH                   ),
+        .PASID_WIDTH    ( PASID_WIDTH                   ),
+        .HOST_DWIDTH    ( C_M_AXI_HOST_MEM_DATA_WIDTH   ),
+        .HOST_AWIDTH    ( C_M_AXI_HOST_MEM_ADDR_WIDTH   ),
+        .LITE_DWIDTH    ( C_S_AXI_CTRL_REG_DATA_WIDTH   ),
+        .LITE_AWIDTH    ( C_S_AXI_CTRL_REG_ADDR_WIDTH   ),
+        .KERNEL_NUM     ( KERNEL_NUM                    )
  ) jm_framework1 (
         .clk                        ( clk                   ),
         .rst_n                      ( rst_n                 ),

@@ -5,20 +5,21 @@
 
 module job_completion #(
     parameter ID_WIDTH = 1,
-    parameter ARUSER_WIDTH = 9,
     parameter AWUSER_WIDTH = 9,
+    parameter PASID_WIDTH = 9,
+	parameter RETURN_WIDTH = 41,
     parameter DATA_WIDTH = 1024,
     parameter ADDR_WIDTH = 64
 )(
     input                           clk                 ,
     input                           rst_n               ,
-    input       [8:0]               cmpl_ram_addr_i     ,
+    input       [PASID_WIDTH-1:0]   cmpl_ram_addr_i     ,
     input                           cmpl_ram_hi_i       ,
     input                           cmpl_ram_lo_i       ,
     input       [31:0]              cmpl_ram_data_i     ,
     output                          complete_ready_o    ,
     input                           complete_push_i     ,
-    input       [40:0]              return_data_i       ,
+    input       [RETURN_WIDTH-1:0]  return_data_i       ,
     output      [ID_WIDTH-1:0]      m_axi_awid          ,
     output      [ADDR_WIDTH-1:0]    m_axi_awaddr        ,
     output      [7:0]               m_axi_awlen         ,
@@ -43,22 +44,22 @@ module job_completion #(
     input                           m_axi_bvalid
 );
 
-wire    [8:0]       cmpl_read_addr;
-wire    [63:0]      cmpl_addr;
-wire                cmpl_fifo_pull;
-wire                cmpl_fifo_full;
-wire                cmpl_fifo_empty;
-wire    [3:0]       cmpl_fifo_count;
-wire    [40:0]      cmpl_fifo_out;
-wire    [31:0]      cmpl_ram_wdata_hi;
-wire                cmpl_ram_wr_hi;
-wire    [31:0]      cmpl_ram_wdata_lo;
-wire                cmpl_ram_wr_lo;
-wire    [8:0]       cmpl_ram_waddr;
-wire    [63:0]      next_cmpl_addr;
-reg                 in_write;
-reg                 cmpl_addr_update;
-reg     [40:0]      cur_return_code;
+wire    [PASID_WIDTH-1:0]   cmpl_read_addr;
+wire    [63:0]              cmpl_addr;
+wire                        cmpl_fifo_pull;
+wire                        cmpl_fifo_full;
+wire                        cmpl_fifo_empty;
+wire    [3:0]               cmpl_fifo_count;
+wire    [RETURN_WIDTH-1:0]  cmpl_fifo_out;
+wire    [31:0]              cmpl_ram_wdata_hi;
+wire                        cmpl_ram_wr_hi;
+wire    [31:0]              cmpl_ram_wdata_lo;
+wire                        cmpl_ram_wr_lo;
+wire    [PASID_WIDTH-1:0]   cmpl_ram_waddr;
+wire    [63:0]              next_cmpl_addr;
+reg                         in_write;
+reg                         cmpl_addr_update;
+reg     [RETURN_WIDTH-1:0]  cur_return_code;
 
 always@(posedge clk) if(cmpl_fifo_pull) cur_return_code <= cmpl_fifo_out;
 

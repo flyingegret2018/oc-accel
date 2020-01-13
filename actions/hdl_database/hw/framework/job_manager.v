@@ -6,63 +6,64 @@
 module job_manager #(
     parameter ID_WIDTH = 1,
     parameter ARUSER_WIDTH = 9,
-    parameter AWUSER_WIDTH = 9,
+    parameter PINFO_WIDTH = 88,
+    parameter PASID_WIDTH = 9,
     parameter DATA_WIDTH = 1024,
     parameter ADDR_WIDTH = 64
 )(
-        input                               clk             ,
-        input                               rst_n           ,
-        input      [087:0]                  process_info_i  ,
-        input                               process_start_i ,
-        output                              process_ready_o ,
-        input                               dsc0_pull_i     ,
-        output      [1023:0]                dsc0_data_o     ,
-        output                              dsc0_ready_o    ,
+        input                           clk             ,
+        input                           rst_n           ,
+        input       [PINFO_WIDTH-1:0]   process_info_i  ,
+        input                           process_start_i ,
+        output                          process_ready_o ,
+        input                           dsc0_pull_i     ,
+        output      [DATA_WIDTH-1:0]    dsc0_data_o     ,
+        output                          dsc0_ready_o    ,
 
         //---- AXI bus ----
            // AXI read address channel
-        output     [ID_WIDTH - 1:0]       m_axi_arid    ,
-        output     [ADDR_WIDTH - 1:0]     m_axi_araddr  ,
-        output     [007:0]                m_axi_arlen   ,
-        output     [002:0]                m_axi_arsize  ,
-        output     [001:0]                m_axi_arburst ,
-        output     [ARUSER_WIDTH - 1:0]   m_axi_aruser  ,
-        output     [003:0]                m_axi_arcache ,
-        output     [001:0]                m_axi_arlock  ,
-        output     [002:0]                m_axi_arprot  ,
-        output     [003:0]                m_axi_arqos   ,
-        output     [003:0]                m_axi_arregion,
-        output reg                        m_axi_arvalid ,
-        input                             m_axi_arready ,
+        output      [ID_WIDTH-1:0]      m_axi_arid    ,
+        output      [ADDR_WIDTH-1:0]    m_axi_araddr  ,
+        output      [007:0]             m_axi_arlen   ,
+        output      [002:0]             m_axi_arsize  ,
+        output      [001:0]             m_axi_arburst ,
+        output      [ARUSER_WIDTH-1:0]  m_axi_aruser  ,
+        output      [003:0]             m_axi_arcache ,
+        output      [001:0]             m_axi_arlock  ,
+        output      [002:0]             m_axi_arprot  ,
+        output      [003:0]             m_axi_arqos   ,
+        output      [003:0]             m_axi_arregion,
+        output  reg                     m_axi_arvalid ,
+        input                           m_axi_arready ,
           // AXI read data channel
-        output                            m_axi_rready  ,
+        output                          m_axi_rready  ,
         //input      [ARUSER_WIDTH - 1:0]   m_axi_ruser  ,
-        input      [ID_WIDTH - 1:0]       m_axi_rid     ,
-        input      [DATA_WIDTH - 1:0]     m_axi_rdata   ,
-        input      [001:0]                m_axi_rresp   ,
-        input                             m_axi_rlast   ,
-        input                             m_axi_rvalid
+        input       [ID_WIDTH-1:0]      m_axi_rid     ,
+        input       [DATA_WIDTH-1:0]    m_axi_rdata   ,
+        input       [001:0]             m_axi_rresp   ,
+        input                           m_axi_rlast   ,
+        input                           m_axi_rvalid
 );
 
-    reg     [8:0]       process_num;
-    reg                 in_read;
-    wire                read_done;
-    wire                read_request;
-    wire                process_fifo_empty;
-    wire                process_fifo_full;
-    wire                process_fifo_valid;
-    wire                process_fifo_pull;
-    wire                process_fifo_push;
-    wire    [87:0]      process_fifo_out;
-    wire    [87:0]      process_fifo_in;
-    wire                dsc_fifo_empty;
-    wire                dsc_fifo_full;
-    wire                dsc_fifo_valid;
-    wire                dsc_fifo_pull;
-    wire                dsc_fifo_push;
-    wire    [1023:0]    dsc_fifo_out;
-    wire    [1023:0]    dsc_fifo_in;
-    wire    [5:0]       dsc_fifo_cnt;
+    reg     [PASID_WIDTH-1:0]       process_num;
+    reg                             in_read;
+    wire                            read_done;
+    wire                            read_request;
+    wire                            process_fifo_empty;
+    wire                            process_fifo_full;
+    wire                            process_fifo_valid;
+    wire                            process_fifo_pull;
+    wire                            process_fifo_push;
+    wire    [PINFO_WIDTH-1:0]       process_fifo_out;
+    wire    [PINFO_WIDTH-1:0]       process_fifo_in;
+    wire                            dsc_fifo_empty;
+    wire                            dsc_fifo_full;
+    wire                            dsc_fifo_valid;
+    wire                            dsc_fifo_pull;
+    wire                            dsc_fifo_push;
+    wire    [DATA_WIDTH-1:0]        dsc_fifo_out;
+    wire    [DATA_WIDTH-1:0]        dsc_fifo_in;
+    wire    [5:0]                   dsc_fifo_cnt;
 
     assign m_axi_arid     = 0;
     assign m_axi_arsize   = 3'd7; // 8*2^7=1024
