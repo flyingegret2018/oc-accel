@@ -7,7 +7,7 @@ module job_completion #(
     parameter ID_WIDTH = 1,
     parameter AWUSER_WIDTH = 9,
     parameter PASID_WIDTH = 9,
-	parameter RETURN_WIDTH = 41,
+    parameter RETURN_WIDTH = 41,
     parameter DATA_WIDTH = 1024,
     parameter ADDR_WIDTH = 64
 )(

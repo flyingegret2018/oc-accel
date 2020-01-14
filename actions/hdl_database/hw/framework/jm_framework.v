@@ -2,14 +2,15 @@
 //Yanheng Lu
 //IBM CSL OpenPower
 //lyhlu@cn.ibm.com
+`define RETURN_CODE_ENABLE
 
 module jm_framework #(
     parameter ID_WIDTH = 1,
     parameter ARUSER_WIDTH = 9,
     parameter AWUSER_WIDTH = 9,
     parameter RETURN_WIDTH = 41,
-	parameter PINFO_WIDTH = 88,
-	parameter PASID_WIDTH = 9,
+    parameter PINFO_WIDTH = 88,
+    parameter PASID_WIDTH = 9,
     parameter KERNEL_NUM = 2,
     parameter LITE_DWIDTH = 32,
     parameter LITE_AWIDTH = 32,
@@ -22,7 +23,9 @@ module jm_framework #(
         output      [KERNEL_NUM-1:0]    engine_start    ,
         output      [HOST_DWIDTH-1:0]   jd_payload      ,
         input       [KERNEL_NUM-1:0]    engine_done     ,
-	//	input       [RETURN_WIDTH-63:0] return_code     ,
+    `ifdef RETURN_CODE_ENABLE
+        input       [RETURN_WIDTH-65:0] return_code     ,
+    `endif
         //---- AXI Lite bus----
           // AXI write address channel
         output                          s_axi_awready   ,
@@ -158,7 +161,7 @@ job_manager #(
         .PASID_WIDTH    ( PASID_WIDTH   ),
         .DATA_WIDTH     ( HOST_DWIDTH   ),
         .ADDR_WIDTH     ( HOST_AWIDTH   )
-	)job_manager0 (
+    )job_manager0 (
         .clk                        ( clk                   ),
         .rst_n                      ( rst_n                 ),
         .process_info_i             ( process_info_w        ),
@@ -195,6 +198,7 @@ job_manager #(
 job_scheduler #(
         .HOST_DWIDTH    ( HOST_DWIDTH   ),
         .RETURN_WIDTH   ( RETURN_WIDTH  ),
+        .PASID_WIDTH    ( PASID_WIDTH   ),
         .KERNEL_NUM     ( KERNEL_NUM    )
     )job_scheduler0(
         .clk                        ( clk                   ),
@@ -207,6 +211,9 @@ job_scheduler #(
         .return_data_o              ( return_data_w         ),
         .engine_start               ( engine_start          ),
         .jd_payload                 ( jd_payload            ),
+    `ifdef RETURN_CODE_ENCABLE
+        .return_code                ( return_code           ),
+    `endif
         .engine_done                ( engine_done           )
         );
 
@@ -217,7 +224,7 @@ job_completion #(
         .PASID_WIDTH    ( PASID_WIDTH   ),
         .DATA_WIDTH     ( HOST_DWIDTH   ),
         .ADDR_WIDTH     ( HOST_AWIDTH   )
-	)job_completion0(
+    )job_completion0(
         .clk                        ( clk                   ),
         .rst_n                      ( rst_n                 ),
         .cmpl_ram_addr_i            ( cmpl_ram_addr_w       ),

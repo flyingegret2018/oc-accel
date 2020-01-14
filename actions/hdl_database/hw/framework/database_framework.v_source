@@ -1,4 +1,5 @@
 `timescale 1ns/1ps
+`define RETURN_CODE_ENABLE
 
 module database_framework #(
     parameter KERNEL_NUM = NUM_KERNELS,
@@ -192,26 +193,22 @@ module database_framework #(
     );
 
     parameter PINFO_WIDTH = 'd88;
-    parameter RETURN_WIDTH = 'd41;
     parameter PASID_WIDTH = 'd9;
+    parameter WRITEREG_NUMBER = 'd14;
+`ifdef RETURN_CODE_ENABLE
+    parameter READREG_NUMBER = 'd1;
+    parameter READ_BASE_ADDR = 'h100;
+    parameter RW = READREG_NUMBER * 32;
+    parameter RETURN_WIDTH = RW + 64;
+    wire    [KERNEL_NUM*RW-1:0]                         return_code     ;
+`else
+    parameter RETURN_WIDTH = PASID_WIDTH + 32;
+`endif
 
     wire    [KERNEL_NUM-1:0]                            kernel_done     ;
     wire    [KERNEL_NUM-1:0]                            kernel_start    ;
     wire    [KERNEL_NUM-1:0]                            engine_interrupt;
     wire    [C_M_AXI_HOST_MEM_DATA_WIDTH-1:0]           kernel_data     ;
-    wire    [PINFO_WIDTH-1:0]                           process_info_w  ;
-    wire                                                process_start_w ;
-    wire                                                process_ready_w ;
-    wire                                                dsc0_pull_w     ;
-    wire                                                dsc0_ready_w    ;
-    wire    [C_M_AXI_HOST_MEM_DATA_WIDTH-1:0]           dsc0_data_w     ;
-    wire                                                complete_push_w ;
-    wire    [RETURN_WIDTH-1:0]                          return_data_w   ;
-    wire                                                complete_ready_w;
-    wire    [31:0]                                      cmpl_ram_data_w ;
-    wire    [PASID_WIDTH-1:0]                           cmpl_ram_addr_w ;
-    wire                                                cmpl_ram_hi_w   ;
-    wire                                                cmpl_ram_lo_w   ;
 
     // AXI write address channel
     wire                                                kernel_m_axi_snap_awid [KERNEL_NUM-1:0];
@@ -534,13 +531,24 @@ module database_framework #(
 
                 );
 
-            axi_lite_adaptor axi_lite_adaptor(
+            axi_lite_adaptor #(
+                .DATA_WIDTH         ( C_S_AXI_CTRL_REG_DATA_WIDTH   ),
+                .ADDR_WIDTH         ( C_S_AXI_CTRL_REG_ADDR_WIDTH   ),
+            `ifdef RETURN_CODE_ENABLE
+                .READREG_NUMBER     ( READREG_NUMBER                ),
+                .READ_BASE_ADDR     ( READ_BASE_ADDR                ),
+            `endif
+                .WRITEREG_NUMBER    ( WRITEREG_NUMBER               )
+                )axi_lite_adaptor(
                 .clk                    ( clk                           ),
                 .rst_n                  ( rst_n                         ),
                 .engine_start           ( kernel_start[i]               ),
                 .engine_done            ( kernel_done[i]                ),
                 .payload                ( kernel_data                   ),
                 .engine_interrupt       ( engine_interrupt[i]           ),
+            `ifdef RETURN_CODE_ENABLE
+                .return_code            ( return_code[(i+1)*RW-1:i*RW]  ),
+            `endif
                 // AXI write address channel
                 .s_axi_awready          ( kernel_s_axi_snap_awready[i]  ),
                 .s_axi_awaddr           ( kernel_s_axi_snap_awaddr[i]   ),
@@ -755,6 +763,9 @@ jm_framework #(
         .engine_start               ( kernel_start          ),
         .jd_payload                 ( kernel_data           ),
         .engine_done                ( kernel_done           ),
+    `ifdef RETURN_CODE_ENABLE
+        .return_code                ( return_code           ),
+    `endif
         .s_axi_awready              ( s_axi_snap_awready    ),
         .s_axi_awaddr               ( s_axi_snap_awaddr     ),//32b
         .s_axi_awprot               ( s_axi_snap_awprot     ),//3b
