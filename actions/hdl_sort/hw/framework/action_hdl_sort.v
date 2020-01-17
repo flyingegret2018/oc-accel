@@ -2,7 +2,7 @@
 `timescale 1ns/1ps
 
 //Don't touch the interface to connect to action-_wrapper!
-module action_hdl_database # (
+module action_hdl_sort # (
     parameter KERNEL_NUM = 8,
     // Parameters of Axi Slave Bus Interface AXI_CTRL_REG
     parameter C_S_AXI_CTRL_REG_DATA_WIDTH    = 32,
@@ -111,19 +111,9 @@ module action_hdl_database # (
     assign m_axi_snap_awlock = 0;
     assign m_axi_snap_arlock = 0;
 
-    database_framework #(
+    sort_framework #(
         // This is a 8 kernel framework
         .KERNEL_NUM                    (KERNEL_NUM),
-        // Parameters of Axi Master Bus Interface AXI_CARD_MEM0 ; to DDR memory
-        .C_M_AXI_CARD_MEM0_ID_WIDTH    (C_M_AXI_CARD_MEM0_ID_WIDTH    ),
-        .C_M_AXI_CARD_MEM0_ADDR_WIDTH  (C_M_AXI_CARD_MEM0_ADDR_WIDTH  ),
-        .C_M_AXI_CARD_MEM0_DATA_WIDTH  (C_M_AXI_CARD_MEM0_DATA_WIDTH  ),
-        .C_M_AXI_CARD_MEM0_AWUSER_WIDTH(C_M_AXI_CARD_MEM0_AWUSER_WIDTH),
-        .C_M_AXI_CARD_MEM0_ARUSER_WIDTH(C_M_AXI_CARD_MEM0_ARUSER_WIDTH),
-        .C_M_AXI_CARD_MEM0_WUSER_WIDTH (C_M_AXI_CARD_MEM0_WUSER_WIDTH ),
-        .C_M_AXI_CARD_MEM0_RUSER_WIDTH (C_M_AXI_CARD_MEM0_RUSER_WIDTH ),
-        .C_M_AXI_CARD_MEM0_BUSER_WIDTH (C_M_AXI_CARD_MEM0_BUSER_WIDTH ),
-
         // Parameters of Axi Slave Bus Interface AXI_CTRL_REG
         .C_S_AXI_CTRL_REG_DATA_WIDTH   (C_S_AXI_CTRL_REG_DATA_WIDTH   ),
         .C_S_AXI_CTRL_REG_ADDR_WIDTH   (C_S_AXI_CTRL_REG_ADDR_WIDTH   ),
@@ -136,31 +126,8 @@ module action_hdl_database # (
         .C_M_AXI_HOST_MEM_ARUSER_WIDTH (C_M_AXI_HOST_MEM_ARUSER_WIDTH ),
         .C_M_AXI_HOST_MEM_WUSER_WIDTH  (C_M_AXI_HOST_MEM_WUSER_WIDTH  ),
         .C_M_AXI_HOST_MEM_RUSER_WIDTH  (C_M_AXI_HOST_MEM_RUSER_WIDTH  ),
-        .C_M_AXI_HOST_MEM_BUSER_WIDTH  (C_M_AXI_HOST_MEM_BUSER_WIDTH  ),
-
-        .INPUT_PACKET_STAT_WIDTH       (INPUT_PACKET_STAT_WIDTH       ),
-        .INPUT_BATCH_WIDTH             (INPUT_BATCH_WIDTH             ),
-        .INPUT_BATCH_PER_PACKET        (INPUT_BATCH_PER_PACKET        ),
-        .PIPE_INDATA_WIDTH             (PIPE_INDATA_WIDTH             ),
-        .PATTERN_NUM_FL                (PATTERN_NUM_FL                ),
-        .PATTERN_NUM_SL                (PATTERN_NUM_SL                ),
-        .NUM_OF_PU                     (NUM_OF_PU                     ),
-        //.CONFIG_CNT_WIDTH              (CONFIG_CNT_WIDTH              ), // CONFIG_CNT_WIDTH = log2NUM_OF_PU;
-        .OUTPUT_STAT_WIDTH             (OUTPUT_STAT_WIDTH             ),
-        //.PATTERN_WIDTH                 (PATTERN_WIDTH                 ),
-        .PATTERN_ID_WIDTH              (PATTERN_ID_WIDTH              ),
-        .MAX_OR_NUM                    (MAX_OR_NUM                    ),
-        .MAX_TOKEN_NUM                 (MAX_TOKEN_NUM                 ),
-        .MAX_STATE_NUM                 (MAX_STATE_NUM                 ),
-        .MAX_TOKEN_LEN                 (MAX_TOKEN_LEN                 ),
-        .MAX_CHAR_NUM                  (MAX_CHAR_NUM                  ),
-        .NUM_BUFFER_SL                 (NUM_BUFFER_SL                 ),
-        .NUM_BUFFER_TL                 (NUM_BUFFER_TL                 ),
-        .NUM_BUFFER_4THL               (NUM_BUFFER_4THL               ),
-        .NUM_STRING_MATCH_PIPELINE     (NUM_STRING_MATCH_PIPELINE     ),
-        .NUM_PIPELINE_IN_A_GROUP       (NUM_PIPELINE_IN_A_GROUP       ),
-        .NUM_OF_PIPELINE_GROUP         (NUM_OF_PIPELINE_GROUP         )
-    ) database_framework_0 (
+        .C_M_AXI_HOST_MEM_BUSER_WIDTH  (C_M_AXI_HOST_MEM_BUSER_WIDTH  )
+    ) sort_framework_0 (
         .clk                      (clk                      ),
         .rst_n                    (rst_n                    ),
         .m_axi_snap_awid          (m_axi_snap_awid          ),
