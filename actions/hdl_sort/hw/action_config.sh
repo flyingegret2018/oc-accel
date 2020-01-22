@@ -59,7 +59,7 @@ for i in $(find -name \*.v_source); do
         echo "!! ERROR processing $v"
         exit -1
     fi
-done                         
+done
 
 # Create IP for the framework
 if [ ! -d $ACTION_ROOT/ip/framework/framework_ip_prj ]; then

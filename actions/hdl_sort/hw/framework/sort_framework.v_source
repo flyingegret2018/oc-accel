@@ -11,7 +11,7 @@ module sort_framework #(
     parameter C_M_AXI_HOST_MEM_ID_WIDTH      = 4,
     parameter C_M_AXI_HOST_MEM_ADDR_WIDTH    = 64,
     parameter C_M_AXI_HOST_MEM_DATA_WIDTH    = 512,
-    parameter C_M_AXI_KERNEL_DATA_WIDTH      = 512,
+    parameter C_M_AXI_KERNEL_DATA_WIDTH      = 1024,
     parameter C_M_AXI_HOST_MEM_AWUSER_WIDTH  = 8,
     parameter C_M_AXI_HOST_MEM_ARUSER_WIDTH  = 8,
     parameter C_M_AXI_HOST_MEM_WUSER_WIDTH   = 1,
@@ -135,7 +135,7 @@ module sort_framework #(
     wire                                                kernel_m_axi_snap_awvalid [KERNEL_NUM-1:0];
     wire                                                kernel_m_axi_snap_awready [KERNEL_NUM-1:0];
     // AXI write data channel
-    wire                                                kernel_m_axi_snap_wid [KERNEL_NUM-1:0];
+    //wire                                                kernel_m_axi_snap_wid [KERNEL_NUM-1:0];
     wire   [C_M_AXI_KERNEL_DATA_WIDTH - 1:0]            kernel_m_axi_snap_wdata [KERNEL_NUM-1:0];
     wire   [(C_M_AXI_KERNEL_DATA_WIDTH/8) - 1:0]        kernel_m_axi_snap_wstrb [KERNEL_NUM-1:0];
     wire                                                kernel_m_axi_snap_wlast [KERNEL_NUM-1:0];
@@ -233,7 +233,7 @@ module sort_framework #(
                 .C_M_AXI_HOST_MEM_ARUSER_WIDTH (C_M_AXI_HOST_MEM_ARUSER_WIDTH ),
                 .C_M_AXI_HOST_MEM_WUSER_WIDTH  (C_M_AXI_HOST_MEM_WUSER_WIDTH  ),
                 .C_M_AXI_HOST_MEM_RUSER_WIDTH  (C_M_AXI_HOST_MEM_RUSER_WIDTH  ),
-                .C_M_AXI_HOST_MEM_BUSER_WIDTH  (C_M_AXI_HOST_MEM_BUSER_WIDTH  ),
+                .C_M_AXI_HOST_MEM_BUSER_WIDTH  (C_M_AXI_HOST_MEM_BUSER_WIDTH  )
 
             ) sort (
                 .clk                    (clk                    ),
@@ -241,9 +241,9 @@ module sort_framework #(
                 .complete_ready         (complete_ready[i]      ),
                 .complete_accept        (complete_accept[i]     ),
                 .complete_data          (complete_data[(i+1)*RETURN_WIDTH-1:i*RETURN_WIDTH]),
-				.engine_start           (engine_start[i]        ),
-				.engine_ready           (engine_ready[i]        ),
-				.engine_data            (engine_data            ),
+                .engine_start           (engine_start[i]        ),
+                .engine_ready           (engine_ready[i]        ),
+                .engine_data            (engine_data            ),
 
                 //---- AXI bus interfaced with SNAP core ----
                 // AXI write address channel
@@ -261,7 +261,7 @@ module sort_framework #(
                 .m_axi_snap_awvalid     (kernel_m_axi_snap_awvalid[i]     ),
                 .m_axi_snap_awready     (kernel_m_axi_snap_awready[i]     ),
                 // AXI write data channel
-                .m_axi_snap_wid         (kernel_m_axi_snap_wid[i]         ),
+                //.m_axi_snap_wid         (kernel_m_axi_snap_wid[i]         ),
                 .m_axi_snap_wdata       (kernel_m_axi_snap_wdata[i]       ),
                 .m_axi_snap_wstrb       (kernel_m_axi_snap_wstrb[i]       ),
                 .m_axi_snap_wlast       (kernel_m_axi_snap_wlast[i]       ),
@@ -484,7 +484,7 @@ jm_framework #(
         .engine_start               ( engine_start          ),
         .engine_ready               ( engine_ready          ),
         .engine_data                ( engine_data           ),
-        .complete_ready_            ( complete_ready        ),
+        .complete_ready             ( complete_ready        ),
         .complete_accept            ( complete_accept       ),
         .complete_data              ( complete_data         ),
         .s_axi_awready              ( s_axi_snap_awready    ),

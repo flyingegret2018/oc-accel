@@ -212,7 +212,7 @@ job_scheduler #(
         .engine_start               ( engine_start          ),
         .engine_ready               ( engine_ready          ),
         .engine_data                ( engine_data           ),
-        .complete_ready_            ( complete_ready        ),
+        .complete_ready             ( complete_ready        ),
         .complete_accept            ( complete_accept       ),
         .complete_data              ( complete_data         )
         );

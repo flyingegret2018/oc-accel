@@ -1,5 +1,4 @@
 `timescale 1ns/1ps
-`define RETURN_CODE_ENABLE
 
 module job_scheduler #(
     parameter HOST_DWIDTH = 1024,
@@ -18,8 +17,8 @@ module job_scheduler #(
         output  reg                     complete_push_o ,
         output      [RETURN_WIDTH-1:0]  return_data_o   ,
                     //---- kernel ----
-        output      [KERNEL_NUM-1:0]    engine_start    ,
-        output      [HOST_DWIDTH-1:0]   engine_data     ,
+        output  reg [KERNEL_NUM-1:0]    engine_start    ,
+        output  reg [HOST_DWIDTH-1:0]   engine_data     ,
         input       [KERNEL_NUM-1:0]    engine_ready    ,
         input       [KERNEL_NUM-1:0]    complete_ready  ,
         output      [KERNEL_NUM-1:0]    complete_accept ,
@@ -32,20 +31,15 @@ module job_scheduler #(
  reg    [5:0]               completion_kernel;
  reg    [KERNEL_NUM-1:0]    engine_run;
 
-always@(posedge clk) if(dsc0_pull_o) engine_data <= {dsc0_data_i[63:32],dsc0_data_i[1023:64],dsc0_data_i[1023:992]};
+always@(posedge clk) if(dsc0_pull_o) engine_data <= {dsc0_data_i[1023:48],dsc0_data_i[1007:992],dsc0_data_i[31:0]};
 assign dsc0_pull_o = |engine_ready & dsc0_ready_i & !engine_start;
 assign return_data_o = completion_info;
 
 genvar j;
 generate
   for (j = 0; j < KERNEL_NUM; j = j + 1) begin:kernel_logic_gen
-    always@(posedge clk or negedge rst_n)
-        if(!rst_n)
-            engine_run[j] <= 1'b0;
-        else if(engine_accept[j])
-            engine_run[j] <= 1'b0;
-        else if(engine_start[j])
-            engine_run[j] <= 1'b1;
+    assign complete_accept[j] = complete_ready[j] & complete_ready_i & (completion_kernel == j);
+end
 endgenerate
 
 always@(posedge clk or negedge rst_n)
@@ -53,7 +47,7 @@ always@(posedge clk or negedge rst_n)
         completion_kernel <= 6'b0;
     else if(completion_kernel == KERNEL_NUM - 1)
         completion_kernel <= 6'b0;
-    else if(!(&engine_ready))
+    else if(!(&complete_ready))
         completion_kernel <= completion_kernel + 1'b1;
 
 always@(*)
@@ -61,7 +55,7 @@ always@(*)
         //: my $kn = NUM_KERNELS;
         //: for (my $i = 0; $i < $kn; $i++) {
         //:     print qq(
-        //:     $i: complete_push_o = engine_run[$i] & complete_ready[$i] & complete_ready_i;
+        //:     $i: complete_push_o = complete_accept[$i];
         //:     )
         //: }
         default: complete_push_o = 1'b0;

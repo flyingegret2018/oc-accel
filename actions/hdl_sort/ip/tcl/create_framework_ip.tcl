@@ -10,12 +10,12 @@ set num_kernels [lindex $argv 2]
 set aip_dir     $action_root/ip/framework
 #set log_dir     $action_root/../../hardware/logs
 set log_dir     .
-set log_file    $log_dir/create_database_framework_ip.log
+set log_file    $log_dir/create_sort_framework_ip.log
 set src_dir     $aip_dir/framework_ip_prj/framework_ip_prj.srcs/sources_1/ip
 
 
 ## Create a new Vivado IP Project
-puts "\[CREATE_DATABASE_FRAMEWORK_IPs..........\] start [clock format [clock seconds] -format {%T %a %b %d/ %Y}]"
+puts "\[CREATE_SORT_FRAMEWORK_IPs..........\] start [clock format [clock seconds] -format {%T %a %b %d/ %Y}]"
 puts "                        FPGACHIP = $fpga_part"
 puts "                        ACTION_ROOT = $action_root"
 puts "                        NUM_KERNELS = $num_kernels"
@@ -61,7 +61,7 @@ set i 0
     incr i
 while {$i < [expr ${num_kernels}+1]} {
     set s_config [format "S%02d_AXI_DATA_WIDTH" $i]
-    set_property CONFIG.${s_config} {512} [get_ips host_axi_interconnect_0] >> $log_file
+    set_property CONFIG.${s_config} {1024} [get_ips host_axi_interconnect_0] >> $log_file
     set s_config [format "S%02d_AXI_WRITE_ACCEPTANCE" $i]
     set_property CONFIG.${s_config} {32} [get_ips host_axi_interconnect_0] >> $log_file
     set s_config [format "S%02d_AXI_READ_ACCEPTANCE" $i]
@@ -117,4 +117,4 @@ generate_target all [get_files $src_dir/axi_wid_fifo/axi_wid_fifo.xci] >> $log_f
 
 
 close_project
-puts "\[CREATE_DATABASE_FRAMEWORK_IPs..........\] done  [clock format [clock seconds] -format {%T %a %b %d %Y}]"
+puts "\[CREATE_SORT_FRAMEWORK_IPs..........\] done  [clock format [clock seconds] -format {%T %a %b %d %Y}]"
